@@ -1,0 +1,7 @@
+%PROJECT_NAME%\app\
+%PROJECT_NAME%\config.json
+%PROJECT_NAME%\app.json
+%PROJECT_NAME%\www\
+%PROJECT_NAME%\view\
+%PROJECT_NAME%\router\routes.php
+%PROJECT_NAME%\raw\

@@ -1,0 +1,70 @@
+{
+    "internal": {
+        "app_name": "PASSPORT",
+        "app_version": "0.0001.1-TEST",
+        "app_description": "",
+        "app_token": "secreTed",
+        "app_access_path": "C:/Users/WENDY EZENWA/Desktop/",
+        "ready": false,
+        "config_version": 0.1,
+        "config_author": "Ogbuefi"
+    },
+    "database": {
+        "address": "localhost",
+        "username": "root",
+        "password": "",
+        "default": "passport"
+    },
+    "service": {
+        "dash": {
+            "address": "https://localhost:1220",
+            "access_name": "b-man",
+            "access_token": "",
+            "comment": "app user centric states and general operation settings; account settings, user settings, app settings"
+        },
+        "buzz": {
+            "address": "https://localhost:1230",
+            "access_name": "biome-drupe",
+            "access_token": "",
+            "comment": "notification, email, chat, bulk sms"
+        },
+        "passport": {
+            "address": "https://localhost:1240",
+            "access_name": "biomer",
+            "access_token": "",
+            "loader": "userservice",
+            "comment": "user specific operations; login/logout, account details, networks, badges, links, status"
+        },
+        "nest": {
+            "address": "https://localhost:1230",
+            "access_name": "biome-drupe",
+            "access_token": "",
+            "comment": "social network"
+        },
+        "pod": {
+            "address": "https://localhost:1230",
+            "access_name": "biome-blog",
+            "access_token": "",
+            "comment": "blog"
+        },
+        "teller": {
+            "address": "https://localhost:1250",
+            "access_name": "biome-cart",
+            "access_token": "",
+            "comment": "payment engine; make withdrawals, receive payment"
+        },
+        "baboon": {
+            "address": "https://localhost:1260",
+            "access_name": "job-engine",
+            "acces_token": "",
+            "comments": "resource management, storage allocation, billing engine"
+        },
+        "adbot": {
+            "address": "https://localhost:5050",
+            "access_name": "adly-bot",
+            "access_token": "",
+            "loader": "k",
+            "comment": "advertisement, promotions, surveys, external embeddable"
+        }
+    }
+}

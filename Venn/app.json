@@ -1,0 +1,12 @@
+{
+    "BOOTSTRAP": "\\app\\component\\Application",
+
+    "startup_script": null,
+    "error_handler": null,
+
+    "route_config": {
+        "route_dir": "router/",
+        "base_path": "/www/",
+        "base_domain": null
+    }
+}

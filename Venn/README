@@ -1,0 +1,33 @@
+##################################################################################
+#################################### VENN FRAMEWORK ##############################
+##################################################################################
+
+-----------------------------------------------------------------------------------
+-------------------------------------[[[STRUCTURE]]]-----------------------------------
+-----------------------------------------------------------------------------------
+[Launcher]
+(launch)            ==> [Component]
+"Kernel(bootstrap)"     (route)
+                        "Router(route)"
+___________________________________________________________________________________
+##DIRECTORY DOCUMENTATION
+
+[COMPONENT]
+Contains components, which are reusable logical containers.
+Components are preferred for handling requests, although \controller\Controller 
+instances can be used.
+
+[CONTROLLER]
+Contains controllers, which are reusable logical units of an application
+
+[CORE]
+Contains core framework scripts that do not need to be tampered with, unless
+providing custom features that can not be added in any other way. Editing files 
+in this location is highly discouraged, unless you know what you are doing and 
+you have explored all possible alternatives.
+
+[DATABASE]
+Contains database accessors. All accessors must extend the \database\Database class.
+
+[RAW]
+Contains raw (non-script) files, such as binaries and media used by framework
