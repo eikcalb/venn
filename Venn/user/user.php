@@ -2,6 +2,9 @@
 
 namespace user;
 
+/**
+ * @deprecated since version 1 use database extension or create app specific classes in app folder
+ */
 class User implements UserInterface {
 
     private $details;

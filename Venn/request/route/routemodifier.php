@@ -10,6 +10,8 @@ namespace request\route;
 
 /**
  * Description of routemodifier
+ * 
+ * A modifier provides logic for @see RouteFilter
  *
  * @author Agwa Israel Onome <eikcalb.agwa.io>
  */

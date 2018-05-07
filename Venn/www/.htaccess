@@ -1,6 +1,6 @@
 FallbackResource /www/index.php
 
-RewriteEngine on
+#RewriteEngine on
 #RewriteBase /
 
 ##RewriteCond %{REQUEST_FILENAME} !/core/ 

@@ -17,7 +17,6 @@ final class Route {
      * @var array result that is passed on to a @see Ref::queue() responder callable
      */
     private static $result;
-    private static $request = null;
     private static $verb = null, $search = null;
     private static $base = [];
 
@@ -26,8 +25,10 @@ final class Route {
 
     private static $acceptedVerbs = [Route::GET, Route::POST, Route::PUT, Route::PATCH, Route::DELETE, Route::HEAD];
     public static $state = false;
+    // TODO: $request might be better left as private
+    private static $request = null;
 
-    private function __construct($url) {
+    private function __construct($url = null) {
         
     }
 
@@ -40,17 +41,7 @@ final class Route {
      */
 
     public static function __callStatic($name, $arguments) {
-        if (empty(Route::$request)) {
-            throw new \Exception\RouterException("The request must not be empty!");
-        }
-
-        if (in_array(strtolower($name), Route::$acceptedVerbs)) {
-            return Route::queue(strtolower($name), $arguments[0], $arguments[1]);
-        } elseif (in_array(strtolower($name), RouteModifier::$acceptedModifiers)) {
-            
-        } else {
-            throw new \BadFunctionCallException("Function '{$name}' is not supported!");
-        }
+        return Route::handleRequest($name, $arguments);
     }
 
     /*   public static function get($path, $responder) {//    remove callable parameter type hint
@@ -65,14 +56,19 @@ final class Route {
      */
 
     public function __call($name, $arguments) {
+        return Route::handleRequest($name, $arguments, $this);
+    }
+
+    private static function handleRequest($name, $arguments, $instance = null) {
         if (empty(Route::$request)) {
             throw new \Exception\RouterException("The request must not be empty!");
         }
 
         if (in_array(strtolower($name), Route::$acceptedVerbs)) {
             return Route::queue(strtolower($name), $arguments[0], $arguments[1]);
-        } elseif (in_array(strtolower($name), Route::$acceptedModifiers)) {
-            
+        } elseif (RouteFilter::hasModifier(strtolower($name))) {
+            // return instance of Route
+            return RouteFilter::modify($instance ? $instance : new Route(), strtolower($name), $arguments);
         } else {
             throw new \BadFunctionCallException("Function '{$name}' is not supported!");
         }
@@ -87,15 +83,16 @@ final class Route {
      * @throws \Exception\FileNotFound
      */
     private static function queue($verb, $pathToMatch, $responder) {
-        if (!empty(static::$base['path'])) {
-            $pathToMatch = static::$base['path'] . substr($pathToMatch, 1);
-        }
         if (Route::$request->verb !== $verb) {//    #obvious
             return false;
+        }
+        if (!empty(static::$base['path'])) {
+            $pathToMatch = static::$base['path'] . ltrim($pathToMatch, '/'); // cut provided url to remove leading slash
         }
         if (stristr(Route::$request->path, "//") !== false || stristr($pathToMatch, "//") !== false) {
             throw new \Exception\FileNotFound(null, 403);
         }
+        var_dump(Route::$request, $pathToMatch);
         $path = trim($pathToMatch, "/");
 //        if (($param = stripos(Route::$request->path, '?')) !== false) {
 //            $path .= substr(Route::$request->path, $param); // attach query parameters to path ***** subject to change =====> matching might be done without query params
@@ -188,7 +185,7 @@ final class Route {
         return;
     }
 
-    public static function initRequestParams($url) {
+    public static function &initRequestParams($url) {
         if (stristr($url, "//") !== false) {
             throw new \exception\FileNotFound(null, 403);
         }
@@ -198,8 +195,9 @@ final class Route {
             $url = strtok($url, '?');
         }
         //TODO: Decide whether to remove Ref static variables
-        Route::$request = new \request\RequestParameters(strtolower(filter_input(INPUT_SERVER, "REQUEST_METHOD")), strtolower(filter_input(INPUT_SERVER, "REQUEST_SCHEME", FILTER_SANITIZE_STRING)), filter_input(INPUT_SERVER, "HTTP_HOST", FILTER_SANITIZE_URL), trim($url, '/'), getallheaders());
-        Route::$request->queryString = strtok(null);
+        Route::$request = new \request\RequestParameters(strtolower(filter_input(INPUT_SERVER, "REQUEST_METHOD")), strtolower(filter_input(INPUT_SERVER, "REQUEST_SCHEME", FILTER_SANITIZE_STRING)), filter_input(INPUT_SERVER, "HTTP_HOST", FILTER_SANITIZE_URL), rawurldecode(trim($url, '/')), getallheaders());
+        Route::$request->port = filter_input(INPUT_SERVER, "SERVER_PORT");
+        Route::$request->queryString = ($param = strtok(null)) ? $param : null;
         return Route::$request;
     }
 

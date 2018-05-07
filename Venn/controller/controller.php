@@ -5,7 +5,7 @@ namespace controller;
  * Represents a logical unit of an application.
  * The recommended way to get use controller instances is via respective @see \core\Kernel methods, e.g. @see \core\Kernel::loadController($controller, $data).
  * 
- * Controllers may also provide a accept a @see Loader by overriding the @see Controller::fromLoader($loader) method.
+ * Controllers may also provide and accept a @see Loader by overriding the @see Controller::fromLoader($loader) method.
  * 
  * Subclasses should provide specific @see Loader classes for their consumption.
  */

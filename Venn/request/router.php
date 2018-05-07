@@ -29,6 +29,7 @@ final class Router {
      *              <code>from/home/to/java</code>
      */
     public $baseDomain;
+    protected $request;
 
     public function __construct($routeReference = null, $context = []) {
         if (empty($routeReference)) {
@@ -61,8 +62,8 @@ final class Router {
             throw new \Exception\RouterException("Routes file does not exist, or is not readable!");
         }
 
-        route\Route::initRequestParams(filter_input(INPUT_SERVER, "REQUEST_URI", FILTER_SANITIZE_URL));
-        
+        $this->request = route\Route::initRequestParams(filter_input(INPUT_SERVER, "REQUEST_URI", FILTER_SANITIZE_URL));
+
         try {
             /*
              * import routes file

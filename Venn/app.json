@@ -1,12 +1,12 @@
 {
     "BOOTSTRAP": "\\app\\component\\Application",
-
+    "root": "app",
     "startup_script": null,
     "error_handler": null,
 
     "route_config": {
         "route_dir": "router/",
-        "base_path": "/www/",
+        "base_path": "/Venn Framework/Venn/www/",
         "base_domain": null
     }
 }

@@ -27,13 +27,14 @@ class Launcher {
             throw new \Exception\ComponentException("Bootstrap component is not root component");
         }
         /*
-         * Runs app initialization
+         * Run app initialization
          */
         Launcher::$instance->startApp(Kernel::getAppConfig());
         $rootComponent->route();
         /*
          * Run app cleanup procedures
          */
+        Launcher::$instance->stopApp();
     }
     
     private static function noop() {
@@ -50,6 +51,12 @@ class Launcher {
     }
 
     private function startApp(&$appConfig) {
+        if (!empty($appConfig[Config::STARTUP_SCRIPT]) && file_exists($appConfig[Config::STARTUP_SCRIPT])) {
+            include $appConfig[Config::STARTUP_SCRIPT];
+        }
+    }
+
+    private function stopApp() {
         
     }
 
