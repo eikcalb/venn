@@ -92,7 +92,6 @@ final class Route {
         if (stristr(Route::$request->path, "//") !== false || stristr($pathToMatch, "//") !== false) {
             throw new \Exception\FileNotFound(null, 403);
         }
-        var_dump(Route::$request, $pathToMatch);
         $path = trim($pathToMatch, "/");
 //        if (($param = stripos(Route::$request->path, '?')) !== false) {
 //            $path .= substr(Route::$request->path, $param); // attach query parameters to path ***** subject to change =====> matching might be done without query params
@@ -195,7 +194,7 @@ final class Route {
             $url = strtok($url, '?');
         }
         //TODO: Decide whether to remove Ref static variables
-        Route::$request = new \request\RequestParameters(strtolower(filter_input(INPUT_SERVER, "REQUEST_METHOD")), strtolower(filter_input(INPUT_SERVER, "REQUEST_SCHEME", FILTER_SANITIZE_STRING)), filter_input(INPUT_SERVER, "HTTP_HOST", FILTER_SANITIZE_URL), rawurldecode(trim($url, '/')), getallheaders());
+        Route::$request = new \request\RequestParameters(strtolower(filter_input(INPUT_SERVER, "REQUEST_METHOD")), strtolower(filter_input(INPUT_SERVER, "REQUEST_SCHEME", FILTER_SANITIZE_STRING)), filter_input(INPUT_SERVER, "HTTP_HOST", FILTER_SANITIZE_URL), trim($url, '/'), getallheaders());
         Route::$request->port = filter_input(INPUT_SERVER, "SERVER_PORT");
         Route::$request->queryString = ($param = strtok(null)) ? $param : null;
         return Route::$request;
