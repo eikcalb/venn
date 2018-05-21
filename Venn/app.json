@@ -3,10 +3,11 @@
     "root": "app",
     "startup_script": null,
     "error_handler": null,
+    "home": "/app/",
 
     "route_config": {
-        "route_dir": "router/",
-        "base_path": "/Venn Framework/Venn/www/",
+        "route_dir": "app/router/",
+        "base_path": "",
         "base_domain": null
     }
 }

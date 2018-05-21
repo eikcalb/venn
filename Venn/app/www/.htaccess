@@ -1,0 +1,15 @@
+#TODO: make web root folder "/www/"
+FallbackResource /index.php
+
+#RewriteEngine on
+#RewriteBase /
+
+##RewriteCond %{REQUEST_FILENAME} !/core/ 
+### !-U NOT URL
+##RewriteRule / /rest/rest/ref.php?q=$1 [L,QSA]
+#RewriteRule ^(.*)$  /core/launch.php [L]
+
+#RewriteRule / core/launch.php
+ErrorDocument 404 "dddx" 
+
+#SSLRequireSSL

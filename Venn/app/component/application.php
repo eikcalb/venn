@@ -2,14 +2,18 @@
 
 namespace app\component;
 
-use component\Component;
-use component\ComponentParent;
+use Venn\component\Component;
+use Venn\component\ComponentParent;
 
 class Application extends Component implements ComponentParent {
 
     public function isRootComponent() {
         return true;
     }
-    
+
+    public function route() {
+        parent::route();
+    }
 
 }
+    

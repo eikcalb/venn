@@ -1,0 +1,28 @@
+{
+    "name": "eikcalb/venn",
+    "description": "Framework focused on microservices",
+    "type": "framework",
+    "require": {
+        "twig/twig": "^2.4",
+        "firebase/php-jwt": "^5.0",
+        "symfony/routing": "^3.4",
+        "symfony/event-dispatcher": "^3.4",
+        "amphp/amp": "^2.0"
+    },
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "LORD AGWA",
+            "email": "agwaisraelonome@gmail.com"
+        }
+    ],
+    "config": {
+        "vendor-dir": "venn/vendor"
+    },
+    "autoload": {
+        "psr-4": {
+            "Venn\\": "venn",
+            "app\\": "app"
+        }
+    }
+}
