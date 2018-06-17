@@ -3,7 +3,6 @@
 namespace Venn\component;
 
 use Venn\controller\Controller;
-use Venn\core\Kernel;
 
 /**
  * This is a container for connecting various parts of an applictaion.
@@ -17,27 +16,31 @@ use Venn\core\Kernel;
  */
 abstract class Component extends Controller {
 
-    public $name;
+    protected $name;
+    // TODO: Remove $parent!!!!! 
+    protected $parent;
 
     public static function start($data) {
         return new static;
     }
 
-    public function __construct() {
-        $fqn = get_class();
-        $this->name = substr($fqn, strripos($fqn, "\\") + 1);
+    protected function __construct($name) {
+        if (!empty($name) && is_string($name)) {
+            $fqn = get_class();
+            $this->name = substr($fqn, strripos($fqn, "\\") + 1);
+        }
+        $this->bootstrap();
     }
 
+    /**
+     * Should be called before processing any request
+     */
     protected function bootstrap() {
         
     }
 
-    public function route() {
-        Kernel::getRouter()->route();
-    }
-
-    protected function render() {
-        
+    public function getName() {
+        return $this->name;
     }
 
 }

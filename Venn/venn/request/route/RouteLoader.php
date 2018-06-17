@@ -11,10 +11,17 @@ namespace Venn\request\route;
  *
  * @author Agwa Israel Onome <eikcalb.agwa.io>
  */
-class RouteLoader {
+abstract class RouteLoader {
 
-    public function __construct($path) {
-        ;
-    }
+    protected $routes;
 
+    public abstract function addRoute(\Symfony\Component\Routing\Route $route);
+
+    abstract public function getRoutes($params);
+
+    public abstract function removeRoute($route);
+
+    public abstract function setRoutes($routes);
+
+    public abstract function setContext(array $context);
 }

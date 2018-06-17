@@ -12,10 +12,11 @@ use Venn\request\RequestParameters;
  */
 //------------------ LOGIN -----------
 Route::get("/log", function() {
-    var_dump($_SERVER);
+
+//    var_dump($_SERVER);
 });
 
-Route::get("/login", "login");
+Route::get("/login", "venn:login");
 
 
 
@@ -36,8 +37,7 @@ Route::get("/{name}/{gerdge}/{dad}/", function(RequestParameters $a) {
 });
 
 Route::get("/", function(RequestParameters $r) {
+    echo $_SERVER['SERVER_NAME'];
     echo \Venn\core\View::render("index.php", ["lar" => ["va" => 'BarCode!']]);
     echo $r->protocol . " " . $r->host . " : $r->port";
 });
-
-

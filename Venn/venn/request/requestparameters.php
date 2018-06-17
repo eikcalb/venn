@@ -5,7 +5,6 @@ namespace Venn\request;
 class RequestParameters {
 
     public $verb, $path, $host, $port, $protocol, $queryString;
-    public $matchedPath;
     private $headers;
     private $params = [];
 
@@ -103,6 +102,7 @@ class RequestParameters {
     }
 
     public function clearParams() {
+        unset($this->params);
         $this->params = [];
     }
     

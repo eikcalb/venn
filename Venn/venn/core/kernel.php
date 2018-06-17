@@ -2,7 +2,8 @@
 
 namespace Venn\core;
 
-use Amp;
+use Venn\request\Router;
+use Venn\request\route\FileRouteLoader;
 
 /*
  *  This is a class for running system processes.
@@ -17,6 +18,8 @@ final class Kernel {
     private static $config, $instance;
     private static $router, $db;
     private static $appConfig = [];
+    private static $interceptor;
+    private static $eventEmitter;
 
     const PATH = "path";
 
@@ -32,6 +35,15 @@ final class Kernel {
 
     protected function init() {
         header("Powered-By: " . Kernel::getName() . " " . Kernel::getVersion());
+        Kernel::$eventEmitter = new event\EventEmitter();
+        Kernel::$interceptor = new InterceptorManager();
+
+        Kernel::on(event\Event::KERNEL_BOOTSTRAP, function() {
+            Kernel::interceptRawRequest();
+        });
+        Kernel::on(event\Event::KERNEL_CLEANUP, function() {
+            Kernel::interceptPostRequest();
+        });
     }
 
     public static function bootstrap($bootstrapLocation = null) {
@@ -43,13 +55,19 @@ final class Kernel {
         if (empty(Kernel::$appConfig)) {
             throw new \Venn\Exception\KernelException("Failed to bootstrap application. No bootstrap file was provided.");
         }
+        // TODO: Run as async!---- !IMPORTANT!!
+        Kernel::emit(event\Event::KERNEL_BOOTSTRAP);
         return Kernel::loadComponent(Kernel::$appConfig['BOOTSTRAP'], null);
     }
 
-//
-//    public static function on($event, callable $listener) {
-//        Kernel::$eventManager->
-//    }
+    public static function emit($event, event\Event $obj = null) {
+        Kernel::$eventEmitter->emit($event, $obj);
+    }
+
+    public static function on($event, callable $listener) {
+        Kernel::$eventEmitter->on($event, $listener);
+    }
+
 //  Generates a token
     public static function genToken(array $head, array $body) {
 //        $pkey = 
@@ -74,20 +92,28 @@ final class Kernel {
         return Kernel::$appConfig;
     }
 
-    public static function getRouter($refPath = null, array $context = null) {
+    public static function getRouter(\Venn\request\route\RouteLoader $loader = null, $context = null) {
         if (!Kernel::isBootstrapped()) {
             throw new \Venn\Exception\KernelException("App must be botstrapped to perform this action!");
         }
         if (empty(static::$router)) {
-            if (!empty($refPath) && is_string($refPath)) {
-                static::$router = new \Venn\request\Router($refPath, $context);
+            if (!empty($loader)) {
+                static::$router = new Router($loader, $context);
             } else {
                 $routeconfig = static::$appConfig['route_config'];
-                static::$router = new \Venn\request\Router(SERVICE_ROOT_DIRECTORY . ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $routeconfig['route_dir']), DIRECTORY_SEPARATOR), empty($context) ? ['path' => $routeconfig['base_path'], 'domain' => $routeconfig['base_domain']] : $context);
+                static::$router = new Router(new FileRouteLoader(SERVICE_ROOT_DIRECTORY . ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $routeconfig['route_dir']), DIRECTORY_SEPARATOR)), empty($context) ? ['path' => $routeconfig[Config::BASE_PATH], 'domain' => $routeconfig[Config::BASE_DOMAIN]] : $context);
                 unset($routeconfig);
             }
         }
         return static::$router;
+    }
+
+    public static function interceptRawRequest(...$args) {
+        call_user_func_array([Kernel::$interceptor, 'invokePre'], $args);
+    }
+
+    public static function interceptPostRequest(...$args) {
+        call_user_func_array([Kernel::$interceptor, 'invokePost'], $args);
     }
 
     public static function isBootstrapped() {
@@ -157,15 +183,20 @@ final class Kernel {
     }
 
     public static function loadController($controller, $data) {
-        if (stripos($controller, "\\app\\controller\\") !== 0) {
+        if (empty($controller) || !is_string($controller)) {
+            throw new \InvalidArgumentException("Provided controller must be a string");
+        }
+        if (0 === strpos($controller, "venn:")) {
+            $callable = "Venn\\controller\\" . substr($controller, strlen("venn:")) . "::start";
+        } elseif (strpos($controller, "\\app\\controller\\") !== 0) {
             $callable = "app\\controller\\$controller::start";
         } else {
             $callable = "$controller::start";
         }
         if (is_callable($callable)) {
-            call_user_func($callable, $data);
+            return call_user_func($callable, $data);
         } else {
-            throw new \Venn\Exception\ControllerException("Controller not found. Ensure controller name is properly specified!");
+            throw new \Venn\Exception\ControllerException("Controller, {$controller}, not found. Ensure controller name is properly specified!");
         }
     }
 
@@ -173,7 +204,9 @@ final class Kernel {
         if (empty($component) || !is_string($component)) {
             throw new \InvalidArgumentException("Provided component must be a string");
         }
-        if (stripos($component, "\\app\\component\\") === false) {
+        if (0 === strpos($component, "venn:")) {
+            $callable = "Venn\\component\\" . substr($component, strlen("venn:")) . "::start";
+        } else if (strpos($component, "\\app\\component\\") === false) {
             $callable = "\\app\\component\\$component::start";
         } else {
             $callable = "$component::start";

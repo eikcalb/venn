@@ -2,17 +2,20 @@
 
 namespace app\component;
 
-use Venn\component\Component;
 use Venn\component\ComponentParent;
 
-class Application extends Component implements ComponentParent {
+class Application extends ComponentParent {
+
+    protected function bootstrap() {
+        parent::bootstrap();
+    }
 
     public function isRootComponent() {
         return true;
     }
 
-    public function route() {
-        parent::route();
+    protected function render() {
+        
     }
 
 }

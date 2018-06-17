@@ -28,8 +28,8 @@ final class Launcher {
          *  The returned component becomes the root component for the application.
          */
         $rootComponent = Kernel::bootstrap($configPath);
-        if (empty($rootComponent) || !$rootComponent instanceof \Venn\component\Component || !$rootComponent instanceof \Venn\component\ComponentParent || !$rootComponent->isRootComponent()) {
-            throw new \Venn\Exception\ComponentException("Bootstrap component is not root component");
+        if (empty($rootComponent) || !$rootComponent instanceof \Venn\component\ComponentParent || !$rootComponent->isRootComponent()) {
+            throw new \Venn\Exception\ComponentException("Bootstrap component is not root component. Use \Venn\component\ComponentParent as a generic parent component!");
         }
         /*
          * Run app initialization
@@ -41,9 +41,9 @@ final class Launcher {
          */
         Launcher::$instance->stopApp();
     }
-    
+
     private static function noop() {
-        if(empty(Launcher::$instance)){
+        if (empty(Launcher::$instance)) {
             Launcher::$instance = new Launcher();
             return true;
         } else {
@@ -57,9 +57,9 @@ final class Launcher {
 
     private function startApp(&$appConfig, $rootComponent) {
         if (!empty($appConfig[Config::STARTUP_SCRIPT]) && file_exists($appConfig[Config::STARTUP_SCRIPT]) && is_executable($appConfig[Config::STARTUP_SCRIPT])) {
-            \Amp\Loop::run(function() {
-            include $appConfig[Config::STARTUP_SCRIPT];
-        });
+            \Amp\Loop::run(function() use (&$appConfig) {
+                include $appConfig[Config::STARTUP_SCRIPT];
+            });
         } else {
             \Amp\Loop::run();
         }

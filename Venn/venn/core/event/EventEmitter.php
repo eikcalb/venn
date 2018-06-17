@@ -16,7 +16,7 @@ class EventEmitter {
 
     protected $usePrefix = true;
     protected $prefix = __CLASS__;
-    private static $eventManager;
+    protected static $eventManager;
 
     public function __construct($prefix = null) {
         if (!empty($prefix)) {
@@ -35,7 +35,7 @@ class EventEmitter {
         }
     }
 
-    public function emit($event, \Symfony\Component\EventDispatcher\Event $eventObject = null) {
+    public function emit($event, Event $eventObject = null) {
         if ($this->usePrefix) {
             $this->getEventManager()->dispatch("{$this->prefix}.{$event}", $eventObject);
         } else {

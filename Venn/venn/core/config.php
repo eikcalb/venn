@@ -8,7 +8,9 @@ namespace Venn\core;
  * @author Agwa Israel Onome <eikcalb.agwa.io>
  */
 class Config {
-    const STARTUP_SCRIPT = 'startup_script',
+    const BASE_DOMAIN = 'base_domain',
+            BASE_PATH = 'base_path',
+            STARTUP_SCRIPT = 'startup_script',
             ERROR_HANDLER = 'error_handler';
 
 }

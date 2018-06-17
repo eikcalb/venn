@@ -3,89 +3,59 @@
 namespace Venn\request;
 
 use Venn\core\Kernel;
+use \Symfony\Component\Routing\Matcher\UrlMatcher;
+use \Venn\core\event\EventEmitter;
 
 /**
  * Used for routing requests
  *
  * @author LORD AGWA
  */
-final class Router {
+final class Router extends EventEmitter {
 
     public $routeFile, $routePath;
-
-    /**
-     * @var string Base path upon which route urls are matched. This is used to abstract
-     *              routes based on path. The matched path is ignored from paths to be routed.
-     *              e.g. suppose a route handles <code>GET /java</code> the @see Router#$basePath can be 
-     *              set to <code>from/home/to/</code> then the route will be launched for a request to
-     *              <code>from/home/to/java</code>
-     */
-    public $basePath;
-
-    /**
-     *
-     * @var string Base domain name upon which route urls are matched. This is used to abstract
-     *              routes based on subdomain. The matched domain is ignored from hostname to be routed.
-     *              e.g. suppose a route handles <code>GET user.first</code> the @see Router#$baseDomain can be 
-     *              set to <code>donot.com</code> then the route will be launched for a request to
-     *              <code>user.first.donot.com</code>
-     */
-    public $baseDomain;
     protected $request;
-    protected $routes;
+    protected $routeLoader;
+    const p = [1, 5, 5];
 
-    public function __construct($routeReference = null, $context = []) {
+    public function __construct(route\RouteLoader $routeReference = null, array $context = []) {
+        parent::__construct();
         if (empty($routeReference)) {
             // TODO: Set an error handler to execute if $routeReference is not provided!   
             throw new \UnexpectedValueException("{$routeReference} must not be null");
         }
-        if (empty($routeReference) || !is_readable($routeReference)) {
-            throw new \Venn\Exception\RouterException("Provided route path must be path to a readable directory! $routeReference");
-        }
-        $this->routePath = $routeReference;
-        $this->routes = new \Symfony\Component\Routing\RouteCollection();
+        $this->routeLoader = $routeReference;
         $this->init($context);
     }
 
     private function init($context) {
-        if (array_key_exists("path", $context)) {
-            $this->basePath = $context['path'];
-        } else {
-            $this->basePath = '';
-        }
-        $this->routes->addPrefix($this->basePath);
-
-        if (array_key_exists("domain", $context)) {
-            $this->baseDomain = $context['domain'];
-        } else {
-            $this->baseDomain = '';
-        }
-        $this->routes->setHost(".*\.{$this->baseDomain}");
-        route\Route::setBase($this->basePath, $this->baseDomain);
+        $this->routeLoader->setContext($context);
     }
 
     public function route($value = null) {
-        $this->routeFile = !empty($value) && isset($value) ? strval($value) . "_routes.php" : 'routes.php';
-        if (!is_readable($this->routePath . $this->routeFile)) {
-            throw new \Venn\Exception\RouterException("Routes file does not exist, or is not readable!");
-        }
-
         $this->request = Request::create(filter_input(INPUT_SERVER, "REQUEST_URI", FILTER_SANITIZE_URL));
-
+        // Paths should not contain double slashes!
+        if (null === $this->request || stristr($this->request['path'], "//") !== false) {
+            throw new \Venn\Exception\FileNotFound(null, 404);
+        }
         try {
-            /**
-             * import routes file and check if @see route\Route::$state changes
-             */
-            new route\RouteLoader($this->routePath . $this->routeFile);
-            if (route\Route::$state !== route\Route::STATE_ROUTE_FOUND || empty(route\Route::$request)) {
+            $routes = $this->routeLoader->getRoutes($value);
+            $routes->addPrefix($this->routeLoader->basePath);
+
+            $matcher = new UrlMatcher($routes, $this->request->createRequestContext());
+            $pre_resolved = $matcher->match($this->request['path']);
+
+            if (is_array($pre_resolved)) {
+                $this->request->resolve($routes->get($pre_resolved['_route']), $pre_resolved['_controller'], $this->inflateParams($pre_resolved));
+                $this->emit(\Venn\core\event\Event::ROUTE_MATCHED);
+                return true;
+            } else {
+                // Unexpected results!!
                 throw new \Venn\Exception\FileNotFound("Not Found", 404);
             }
         } catch (\Venn\Exception\Basis $e) {
             //TODO: Handle error on either Kernel or calling component or a separate method
             switch (strtolower($e->getName())) {
-                case RouteFoundState::NAME:
-                    $this->call_controller(route\Route::$request->getResolvedController());
-                    break;
                 case "filenotfound":
                     header("HTTP/1.1 " . $e->getCode() . " " . $e->getMessage());
                     break;
@@ -94,27 +64,27 @@ final class Router {
                     header("HTTP/1.1 404 " . $e->getMessage()); //TODO: remove message
                     break;
             }
+        } catch (\Exception $e) {
+            header("HTTP/1.1 404 {$e->getMessage()}"); //TODO: remove message
         }
-        $requestContext = new \Symfony\Component\Routing\RequestContext();
-        $matcher = new \Symfony\Component\Routing\Matcher\UrlMatcher($this->routes, $requestContext);
-        $matcher->match($pathinfo);
+        return false;
     }
 
-    /**
-     * 
-     * @param type $controller <p>The action designated for the detected url</p>
-     *                          <p>This function is called with the HTTP Method and @see Ref::queue results</p>
-     * 
-     */
-    private function call_controller($controller) {
-        if (empty($controller)) {
-            throw new \Venn\Exception\ControllerException("Controller must be set for handling routes!");
+    public function getRequest() {
+        return $this->request;
+    }
+
+    public function getLoader() {
+        return $this->routeLoader;
+    }
+
+    private function inflateParams(array $params) {
+        for ($i = 0; $i < count(route\Route::$RESERVED_DEFAULTS); $i++) {
+            if (array_key_exists(route\Route::$RESERVED_DEFAULTS[$i], $params)) {
+                unset($params[route\Route::$RESERVED_DEFAULTS[$i]]);
+            }
         }
-        if (is_callable($controller)) {
-            $controller($this->request);
-        } elseif (is_string($controller)) {
-            Kernel::loadController($controller, $this->request);
-        }
+        return $params;
     }
 
 }

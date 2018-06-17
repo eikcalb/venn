@@ -6,8 +6,8 @@
     "home": "/app/",
 
     "route_config": {
-        "route_dir": "app/router/",
+        "route_dir": "venn/router/",
         "base_path": "",
-        "base_domain": null
+        "base_domain": "localhost"
     }
 }
